@@ -51,7 +51,7 @@
         border: 2px solid rgba(255,255,255,0.8);
         box-shadow: 0 8px 20px rgba(0,0,0,0.08);
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+        transition: all 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         text-decoration: none; color: #333;
         transform-origin: center center;
     }
@@ -60,11 +60,18 @@
     }
     .term-card-2d span { font-size: 14px; font-weight: bold; }
 
-    .term-card-2d:hover { transform: scale(1.2) !important; z-index: 20; background: #fff; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+    .term-card-2d:hover { z-index: 20; background: #fff; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
 
-    /* 高亮卡片 */
-    .term-card-2d.active { border: 2px solid #a68a7a; box-shadow: 0 0 30px rgba(166, 138, 122, 0.4); transform: scale(1.15); z-index: 10; }
-    .term-card-2d.inactive { opacity: 0.6; filter: grayscale(0.2); }
+    /* 高亮卡片 - 移动到中心位置 */
+    .term-card-2d.active {
+        border: 2px solid #a68a7a;
+        box-shadow: 0 0 40px rgba(166, 138, 122, 0.5);
+        z-index: 15;
+    }
+    .term-card-2d.inactive {
+        opacity: 0.5;
+        filter: grayscale(0.3);
+    }
 </style>
 {% endblock %}
 
@@ -110,10 +117,11 @@
     const exploreBtn = document.getElementById('exploreBtn');
 
     let currentIndex = 0;
+    // 每次滚轮滚动旋转的卡片数量（增大角度步进）
+    const scrollStep = 3; // 每次滚动移动3个卡片（15度 * 3 = 45度）
 
     function updateWheel(index) {
-        // ========== 【修改点 3】增加圆环半径 ==========
-        const radius = 260; // 从 220 扩大到 260，让卡片分布更开
+        const radius = 260;
         const angleStep = 360 / totalCards;
         const activeCard = cards[index];
 
@@ -122,29 +130,39 @@
         activeDesc.innerText = activeCard.dataset.desc;
         exploreBtn.href = activeCard.href;
 
-        // 旋转整个轨道
-        const rotateAngle = -(index * angleStep);
-        track.style.transform = `rotate(${rotateAngle}deg)`;
+        // 计算轨道旋转角度（选中卡片应该位于顶部位置，即-90度的位置）
+        const targetAngleForSelected = -90;
+        const currentCardAngle = index * angleStep;
+        const rotateAngle = targetAngleForSelected - currentCardAngle;
+        
+        // 轨道容器保持静止
+        track.style.transform = `rotate(0deg)`;
 
         cards.forEach((card, i) => {
-            const angle = i * angleStep;
-            const radian = angle * Math.PI / 180;
+            // 计算卡片在圆环上的原始角度
+            const baseAngle = i * angleStep + rotateAngle;
+            const radian = baseAngle * Math.PI / 180;
 
             // 计算圆上的 x, y 坐标
             const x = Math.cos(radian) * radius;
             const y = Math.sin(radian) * radius;
 
-            // 2D 平面位移修正 + 反向旋转抵消轨道旋转，确保所有卡片始终保持竖直
-            card.style.transform = `translate(${x}px, ${y}px) rotate(${rotateAngle}deg)`;
-            card.style.transformOrigin = 'center center';
-
             // 高亮逻辑
             card.classList.remove('active', 'inactive');
+            
             if (i === index) {
+                // 选中卡片：移动到中心位置，放大显示，保持竖直
+                card.style.transform = `translate(0px, 0px) rotate(0deg) scale(1.3)`;
                 card.classList.add('active');
             } else {
+                // 其他卡片：保持在圆环位置，反向旋转保持竖直
+                // 反向旋转角度 = -baseAngle，抵消轨道角度让卡片保持竖直
+                const counterRotation = -baseAngle;
+                card.style.transform = `translate(${x}px, ${y}px) rotate(${counterRotation}deg)`;
                 card.classList.add('inactive');
             }
+            
+            card.style.transformOrigin = 'center center';
         });
     }
 
@@ -153,9 +171,11 @@
         e.stopPropagation();
         e.preventDefault();
         if (e.deltaY > 0) {
-            currentIndex = (currentIndex + 1) % totalCards;
+            // 向下滚动：增加索引（顺时针方向）
+            currentIndex = (currentIndex + scrollStep) % totalCards;
         } else {
-            currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+            // 向上滚动：减少索引（逆时针方向）
+            currentIndex = (currentIndex - scrollStep + totalCards) % totalCards;
         }
         updateWheel(currentIndex);
     });
