@@ -91,7 +91,7 @@
                    data-desc="{{ term.desc }}" data-index="{{ loop.index0 }}">
                     <img src="{{ url_for('static', filename='images/' + term.image) }}"
                          alt="{{ term.name }}"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                         onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/toy.png') }}'; this.alt='{{ term.name }} (暂用占位图)';">
                     <span>{{ term.name }}</span>
                 </a>
                 {% endfor %}

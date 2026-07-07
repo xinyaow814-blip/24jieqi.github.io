@@ -1,58 +1,99 @@
-from flask import Flask, render_template
-
-app = Flask(__name__)
-
-# 1. 24 节气数据 (图片名称修复为安全文件名，如 01.png, 02.png)
-solar_terms = []
-term_names = ["立春", "雨水", "惊蛰", "春分", "清明", "谷雨", 
-              "立夏", "小满", "芒种", "夏至", "小暑", "大暑", 
-              "立秋", "处暑", "白露", "秋分", "寒露", "霜降", 
-              "立冬", "小雪", "大雪", "冬至", "小寒", "大寒"]
-
-for i, name in enumerate(term_names, 1):
-    # 使用 f"{i:02d}" 确保前面补0，如 01.png, 02.png，比单纯 i 更规范，避免排序乱序
-    # *注意*：您需要将 images 文件夹里的图重命名为 01.png 到 24.png
-    safe_img_name = f"{i:02d}.png" 
-    solar_terms.append({
-        'id': i,
-        'name': name,
-        'image': safe_img_name, # 使用安全文件名
-        'desc': f'{name}，标志着自然的周期更迭与万物生发。',
-        'season': 'spring' if i <= 6 else ('summer' if i <= 12 else ('autumn' if i <= 18 else 'winter'))
-    })
-
-# 2. 商品数据
-shop_items = [
-    {'id': 101, 'name': '怀中陪伴毛绒玩偶', 'image': 'toy.png', 'desc': '软萌节气限定。', 'price': 129},
-    {'id': 102, 'name': '指尖灵气树脂摆件', 'image': 'figure.png', 'desc': '桌面东方灵气。', 'price': 89},
-    {'id': 103, 'name': '一起走！帆布包', 'image': 'bag.png', 'desc': '背在身上文艺出街。', 'price': 79},
-    {'id': 104, 'name': '节气印象香薰套装', 'image': 'candle.png', 'desc': '用气味感知四季。', 'price': 199},
-]
-
-@app.route('/')
-def index(): return render_template('index.html')
-
-@app.route('/display')
-def display(): return render_template('display.html', terms=solar_terms)
-
-@app.route('/culture/<int:id>')
-def culture_detail(id):
-    term = next((item for item in solar_terms if item["id"] == id), None)
-    return render_template('culture.html', term=term)
-
-@app.route('/interactive')
-def interactive(): return render_template('interactive.html')
-
-@app.route('/quiz')
-def quiz(): return render_template('quiz.html')
-
-@app.route('/shop')
-def shop(): return render_template('shop.html', items=shop_items)
-
-@app.route('/product/<int:id>')
-def product_detail(id):
-    item = next((item for item in shop_items if item["id"] == id), None)
-    return render_template('product_detail.html', item=item)
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+{% extends "base.html" %}
+{% block head %}
+<style>
+    .quiz-wrapper {
+        width: 90%;
+        max-width: 720px;
+        padding: 50px 60px;
+        text-align: center;
+    }
+    .quiz-wrapper h2 {
+        font-family: 'Ma Shan Zheng', serif;
+        font-size: 2.4rem;
+        color: #4a4a4a;
+        margin-bottom: 10px;
+        letter-spacing: 3px;
+    }
+    .quiz-subtitle {
+        color: #888;
+        margin-bottom: 30px;
+        letter-spacing: 1px;
+    }
+    .quiz-question {
+        font-size: 1.25rem;
+        color: #444;
+        margin-bottom: 25px;
+        line-height: 1.7;
+    }
+    .quiz-options {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+    .quiz-option {
+        padding: 14px 18px;
+        background: rgba(255,255,255,0.6);
+        border: 1px solid rgba(255,255,255,0.8);
+        border-radius: 14px;
+        cursor: pointer;
+        transition: 0.25s;
+        color: #555;
+    }
+    .quiz-option:hover {
+        background: #a68a7a;
+        color: #fff;
+        transform: translateY(-2px);
+    }
+    .quiz-option.correct {
+        background: #7fb78b;
+        color: #fff;
+        border-color: #7fb78b;
+    }
+    .quiz-option.wrong {
+        background: #e08a8a;
+        color: #fff;
+        border-color: #e08a8a;
+    }
+    .quiz-result {
+        font-size: 1.1rem;
+        color: #a68a7a;
+        min-height: 1.5em;
+        margin-bottom: 10px;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<section class="snap-section">
+    <div class="quiz-wrapper stamp-border">
+        <h2>节气趣味问答</h2>
+        <div class="quiz-subtitle">—— 测一测你的节气底蕴</div>
+        <div class="quiz-question" id="quizQuestion">"清明时节雨纷纷" 出自哪位诗人的名句？</div>
+        <div class="quiz-options" id="quizOptions">
+            <div class="quiz-option" data-correct="false">李白</div>
+            <div class="quiz-option" data-correct="true">杜牧</div>
+            <div class="quiz-option" data-correct="false">白居易</div>
+            <div class="quiz-option" data-correct="false">王维</div>
+        </div>
+        <div class="quiz-result" id="quizResult"></div>
+        <a href="/interactive" class="btn" style="background:#ddd;color:#444;">← 返回互动</a>
+    </div>
+</section>
+<script>
+    const options = document.querySelectorAll('.quiz-option');
+    const result = document.getElementById('quizResult');
+    options.forEach(opt => {
+        opt.addEventListener('click', () => {
+            options.forEach(o => o.style.pointerEvents = 'none');
+            if (opt.dataset.correct === 'true') {
+                opt.classList.add('correct');
+                result.innerText = '答对啦！你真是一位节气小达人。';
+            } else {
+                opt.classList.add('wrong');
+                result.innerText = '差一点，再去了解一下节气小知识吧～';
+                options.forEach(o => { if (o.dataset.correct === 'true') o.classList.add('correct'); });
+            }
+        });
+    });
+</script>
+{% endblock %}

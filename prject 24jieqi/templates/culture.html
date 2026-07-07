@@ -123,7 +123,7 @@
         <div class="culture-img-box">
            <img src="{{ url_for('static', filename='images/' + term.image) }}"
      alt="{{ term.name }}"
-     onerror="this.alt='暂无图片'; this.style.width='50%'; this.style.opacity='0.5';">
+     onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/toy.png') }}'; this.alt='{{ term.name }} (占位图)';">
         </div>
 
         <!-- 右侧文字区 -->

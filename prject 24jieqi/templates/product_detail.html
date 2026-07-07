@@ -2,7 +2,10 @@
 {% block content %}
 <section class="snap-section" style="background: #f0f0ea; flex-direction: row; gap: 50px;">
     <div style="background: white; padding: 30px; border-radius: 30px; width: 400px;">
-        <img src="{{ url_for('static', filename='images/' + item.image) }}" style="width: 100%;">
+        <img src="{{ url_for('static', filename='images/' + item.image) }}"
+             alt="{{ item.name }}"
+             onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/toy.png') }}'; this.alt='{{ item.name }} (占位图)';"
+             style="width: 100%;">
     </div>
     <div style="max-width: 500px;">
         <a href="/shop" class="btn" style="background: #ddd; color: #444; margin-bottom: 20px; display: inline-block;">返回商城</a>

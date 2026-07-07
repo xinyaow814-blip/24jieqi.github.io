@@ -53,6 +53,17 @@
         /* --- 通用按钮 --- */
         .btn { display: inline-block; padding: 12px 32px; background: var(--glass-bg); border: var(--glass-border); color: var(--text-main); border-radius: 30px; text-decoration: none; transition: 0.3s; cursor: pointer; }
         .btn:hover { background: var(--accent-color); color: white; transform: translateY(-3px); }
+
+        /* --- 邮票边框类 (用于互动、商城、文化等卡片) --- */
+        .stamp-border {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 6px dashed rgba(200, 200, 195, 0.6);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .stamp-border:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 12px 25px rgba(166, 138, 122, 0.15); }
     </style>
     {% block head %}{% endblock %}
 </head>
@@ -108,41 +119,3 @@
     </script>
 </body>
 </html>
-<!DOCTYPE html>
-<html lang="zh">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>四时灵兽纪</title>
-    <style>
-        /* ... 之前的全部基础重置、字体、背景光晕代码保留不变 ... */
-
-        /* --- 这里重点新增：胶片边框 CSS 类 --- */
-        .film-border {
-            position: relative;
-            border: 4px solid rgba(255, 255, 255, 0.8);
-            background: rgba(255, 255, 255, 0.3);
-            /* 使用径向渐变在四周制造“齿孔”视觉效果 */
-            border-image: repeating-linear-gradient(
-                45deg,
-                #fff 0px,
-                #fff 8px,
-                transparent 8px,
-                transparent 12px
-            ) 4;
-            border-image-slice: 4;
-        }
-
-        /* 邮票边框类 (用于互动页面卡片) */
-        .stamp-border {
-            background: rgba(255, 255, 255, 0.6);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            border: 6px dashed rgba(200, 200, 195, 0.6);
-            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
-            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .stamp-border:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 12px 25px rgba(166, 138, 122, 0.15); }
-    </style>
-</head>
-<!-- body 部分保持原样，包括 JS滚轮逻辑 -->

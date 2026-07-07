@@ -27,7 +27,9 @@
         <div class="shop-card stamp-border">
             <div class="shop-img-box">
                 <!-- 如果没有这4个图，会显示断裂图标，实际运行需放置同名图片 -->
-                <img src="{{ url_for('static', filename='images/' + item.image) }}" alt="{{ item.name }}">
+                <img src="{{ url_for('static', filename='images/' + item.image) }}"
+                     alt="{{ item.name }}"
+                     onerror="this.onerror=null; this.src='{{ url_for('static', filename='images/toy.png') }}'; this.alt='{{ item.name }} (占位图)';">
             </div>
             <h3>{{ item.name }}</h3>
             <p>{{ item.desc }}</p>
