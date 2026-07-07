@@ -134,8 +134,8 @@
             const x = Math.cos(radian) * radius;
             const y = Math.sin(radian) * radius;
 
-            // 2D 平面位移修正
-            card.style.transform = `translate(${x}px, ${y}px)`;
+            // 2D 平面位移修正 + 反向旋转抵消轨道旋转，确保所有卡片始终保持竖直
+            card.style.transform = `translate(${x}px, ${y}px) rotate(${rotateAngle}deg)`;
             card.style.transformOrigin = 'center center';
 
             // 高亮逻辑
