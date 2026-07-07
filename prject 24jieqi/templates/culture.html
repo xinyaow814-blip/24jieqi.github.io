@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+    /* 使用与互动页、商城页相同的卡片与排版风格 */
+    .culture-wrapper {
+        width: 90%;
+        max-width: 1200px;
+        height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 50px;
+    }
+
+    /* 左侧：节气形象 */
+    .culture-img-box {
+        flex: 1;
+        max-width: 400px;
+        aspect-ratio: 1 / 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(10px);
+        padding: 30px;
+        /* 复用统一的邮票边框类，样式在 base.html 已定义 */
+        border: 8px dashed rgba(200, 200, 195, 0.4);
+        border-radius: 30px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
+        transition: transform 0.3s ease;
+    }
+    .culture-img-box:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 25px 45px rgba(166, 138, 122, 0.15);
+    }
+    .culture-img-box img {
+        width: 85%;
+        height: auto;
+        object-fit: contain;
+        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.05));
+    }
+
+    /* 右侧：科普文字内容 */
+    .culture-content-box {
+        flex: 1.5;
+        background: rgba(255, 255, 255, 0.45);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border-radius: 30px;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.04);
+        padding: 50px 60px;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-height: 450px;
+    }
+
+    .culture-content-box h1 {
+        font-family: 'Ma Shan Zheng', serif;
+        font-size: 3.5rem;
+        color: #4a4a4a;
+        margin-bottom: 10px;
+        letter-spacing: 4px;
+    }
+
+    .culture-subtitle {
+        font-size: 1rem;
+        color: #888;
+        margin-bottom: 25px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+        padding-bottom: 15px;
+        letter-spacing: 1px;
+    }
+
+    .culture-text p {
+        line-height: 2.2;
+        color: #555;
+        font-size: 1.05rem;
+        margin-bottom: 20px;
+        text-indent: 2em; /* 首行缩进，符合中式阅读习惯 */
+    }
+
+    .culture-tags {
+        margin-top: 15px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
+    }
+
+    .culture-tags span {
+        background: rgba(255, 255, 255, 0.8);
+        padding: 5px 18px;
+        border-radius: 30px;
+        font-size: 0.85rem;
+        color: #666;
+        border: 1px solid rgba(0,0,0,0.03);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+    }
+
+    /* 左下角返回按钮 */
+    .back-btn-wrapper {
+        position: absolute;
+        bottom: -70px;
+        left: 0;
+    }
+
+    /* 响应式 */
+    @media (max-width: 900px) {
+        .culture-wrapper { flex-direction: column; height: auto; padding: 60px 0; gap: 30px; }
+        .culture-img-box { max-width: 250px; }
+        .culture-content-box { padding: 30px; }
+        .culture-content-box h1 { font-size: 2.5rem; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="snap-section">
+    <div class="culture-wrapper">
+        <!-- 左侧图片区 -->
+        <div class="culture-img-box">
+           <img src="{{ url_for('static', filename='images/' + term.image) }}"
+     alt="{{ term.name }}"
+     onerror="this.alt='暂无图片'; this.style.width='50%'; this.style.opacity='0.5';">
+        </div>
+
+        <!-- 右侧文字区 -->
+        <div class="culture-content-box">
+            <h1>{{ term.name }}</h1>
+            <div class="culture-subtitle">—— 二十四节气 · 物候之灵</div>
+            
+            <div class="culture-text">
+                <p>{{ term.desc }}</p>
+                <p>
+                    <strong>气候特点：</strong> 此时气温逐渐回升，降水增多，万物开始复苏，大自然展现出生机勃勃的景象。
+                    （此处您可以替换为真实的节气物候介绍）
+                </p>
+                <p>
+                    <strong>传统习俗：</strong> 吃春饼、踏青、祭祀等活动，体现了人们顺应天时、追求人与自然和谐共生的智慧。
+                </p>
+            </div>
+
+            <div class="culture-tags">
+                <span>🌿 春季</span>
+                <span>📅 太阳黄经 315°</span>
+                <span>✨ 三候：东风解冻</span>
+            </div>
+
+            <!-- 返回按钮 -->
+            <div class="back-btn-wrapper">
+                <a href="/display" class="btn" style="background: #ddd; color: #555; box-shadow: none; padding: 8px 25px;">← 返回 24 节气图鉴</a>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

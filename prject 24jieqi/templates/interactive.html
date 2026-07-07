@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+    .interactive-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; width: 90%; max-width: 1200px; }
+    .func-card { padding: 40px 20px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 280px; width: 100%; }
+    .func-card h3 { margin-bottom: 10px; color: #4a4a4a; }
+    .func-card p { color: #7e8a98; margin-bottom: 20px; }
+</style>
+{% endblock %}
+{% block content %}
+<section class="snap-section">
+    <h2 style="font-family: 'Ma Shan Zheng', serif; font-size: 2.2rem; margin-bottom: 40px;">灵趣互动</h2>
+    <div class="interactive-grid">
+        <!-- 增加 stamp-border 类 -->
+        <div class="func-card stamp-border">
+            <div style="font-size: 2.5rem;">📅</div>
+            <h3>每日打卡</h3>
+            <p>连续签到 <strong>5</strong> 天</p>
+            <button class="btn" style="padding: 6px 20px;">已签到</button>
+        </div>
+        <div class="func-card stamp-border">
+            <div style="font-size: 2.5rem;">📜</div>
+            <h3>相关诗词</h3>
+            <p style="font-style: italic;">“微雨众卉新”</p>
+            <button class="btn" style="padding: 6px 20px;">赏读</button>
+        </div>
+        <div class="func-card stamp-border">
+            <div style="font-size: 2.5rem;">🍎</div>
+            <h3>水果令</h3>
+            <p>仲夏时令：荔枝</p>
+            <button class="btn" style="padding: 6px 20px;">时令推荐</button>
+        </div>
+        <div class="func-card stamp-border">
+            <div style="font-size: 2.5rem;">❓</div>
+            <h3 style="color: #a68a7a;">趣味问答</h3>
+            <p>测测你的节气底蕴。</p>
+            <a href="/quiz" class="btn" style="background: #a68a7a; color: white; border: none;">去挑战</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四时灵兽纪</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&display=swap');
+
+        :root {
+            --bg-color-start: #f3f0e9; --bg-color-end: #d7dce0;
+            --glass-bg: rgba(255, 255, 255, 0.45);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+            --text-main: #4a4a4a; --accent-color: #a68a7a;
+        }
+
+        html, body {
+            width: 100%; height: 100%; overflow: hidden; /* 禁止原生滚动条 */
+            font-family: 'Noto Serif SC', serif; color: var(--text-main);
+            background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
+        }
+
+        /* --- JS控制的核心滑动容器 --- */
+        .snap-container {
+            height: 100vh; width: 100vw;
+            position: relative; overflow: hidden;
+        }
+        .snap-wrapper {
+            display: flex; flex-direction: column;
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94); /* 高级缓动曲线 */
+            will-change: transform;
+        }
+        .snap-section {
+            height: 100vh; width: 100%; flex-shrink: 0;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            position: relative; padding: 40px;
+            background: transparent;
+        }
+
+        /* --- 渐变光晕背景 --- */
+        .bg-orb { position: fixed; border-radius: 50%; filter: blur(80px); opacity: 0.3; z-index: -1; pointer-events: none; }
+        .orb-1 { top: -10%; left: -10%; width: 60vw; height: 60vh; background: #d3e2d9; }
+        .orb-2 { bottom: -20%; right: -10%; width: 70vw; height: 70vh; background: #e6d1c4; }
+
+        /* --- 导航 --- */
+        .logo { position: fixed; top: 30px; left: 50px; z-index: 999; font-family: 'Ma Shan Zheng', serif; font-size: 28px; color: #4a4a4a; letter-spacing: 4px; }
+        .nav-bar { position: fixed; top: 30px; right: 40px; z-index: 999; display: flex; background: var(--glass-bg); backdrop-filter: blur(12px); padding: 12px 25px; border-radius: 40px; border: var(--glass-border); }
+        .nav-bar a { text-decoration: none; color: #555; font-size: 16px; font-weight: 500; transition: 0.3s; padding: 0 18px; position: relative; }
+        .nav-bar a:not(:last-child)::after { content: ''; position: absolute; right: 0; top: 50%; transform: translateY(-50%); height: 14px; width: 1px; background: rgba(0,0,0,0.1); }
+        .nav-bar a:hover { color: var(--accent-color); transform: translateY(-2px); }
+
+        /* --- 通用按钮 --- */
+        .btn { display: inline-block; padding: 12px 32px; background: var(--glass-bg); border: var(--glass-border); color: var(--text-main); border-radius: 30px; text-decoration: none; transition: 0.3s; cursor: pointer; }
+        .btn:hover { background: var(--accent-color); color: white; transform: translateY(-3px); }
+    </style>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <div class="bg-orb orb-1"></div>
+    <div class="bg-orb orb-2"></div>
+    <div class="logo">四时灵兽纪</div>
+    <div class="nav-bar">
+        <a href="/">首页</a> <a href="/display">展示</a> <a href="/interactive">互动</a> <a href="/shop">商城</a>
+    </div>
+
+    <!-- JS控制的滑动容器 -->
+    <div class="snap-container" id="appContainer">
+        <div class="snap-wrapper" id="scrollWrapper">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- 核心滚动控制脚本 -->
+    <script>
+        let isAnimating = false;
+        let currentIndex = 0;
+        const wrapper = document.getElementById('scrollWrapper');
+        const sections = document.querySelectorAll('.snap-section');
+        const totalSections = sections.length;
+
+        function scrollToSection(index) {
+            if (isAnimating || index < 0 || index >= totalSections) return;
+            isAnimating = true;
+            currentIndex = index;
+            // 计算位移
+            wrapper.style.transform = `translateY(-${index * 100}vh)`;
+            // 解锁动画锁
+            setTimeout(() => { isAnimating = false; }, 800);
+        }
+
+        // 监听鼠标滚轮事件 (兼容触控板)
+        document.getElementById('appContainer').addEventListener('wheel', function(e) {
+            e.preventDefault(); // 阻止默认滚动
+            if (isAnimating) return;
+            if (e.deltaY > 0) { // 向下滚动
+                scrollToSection(currentIndex + 1);
+            } else if (e.deltaY < 0) { // 向上滚动
+                scrollToSection(currentIndex - 1);
+            }
+        }, { passive: false });
+
+        // 允许键盘上下键控制
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'ArrowDown') scrollToSection(currentIndex + 1);
+            if (e.key === 'ArrowUp') scrollToSection(currentIndex - 1);
+        });
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>四时灵兽纪</title>
+    <style>
+        /* ... 之前的全部基础重置、字体、背景光晕代码保留不变 ... */
+
+        /* --- 这里重点新增：胶片边框 CSS 类 --- */
+        .film-border {
+            position: relative;
+            border: 4px solid rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.3);
+            /* 使用径向渐变在四周制造“齿孔”视觉效果 */
+            border-image: repeating-linear-gradient(
+                45deg,
+                #fff 0px,
+                #fff 8px,
+                transparent 8px,
+                transparent 12px
+            ) 4;
+            border-image-slice: 4;
+        }
+
+        /* 邮票边框类 (用于互动页面卡片) */
+        .stamp-border {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 6px dashed rgba(200, 200, 195, 0.6);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .stamp-border:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 12px 25px rgba(166, 138, 122, 0.15); }
+    </style>
+</head>
+<!-- body 部分保持原样，包括 JS滚轮逻辑 -->

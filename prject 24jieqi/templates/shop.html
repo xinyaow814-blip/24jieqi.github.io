@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+    .shop-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr); /* 4个商品平均排列 */
+        gap: 25px;
+        width: 90%;
+        max-width: 1200px;
+    }
+    .shop-card { padding: 20px; text-align: center; }
+    .shop-img-box {
+        background: rgba(255,255,255,0.7); border-radius: 15px;
+        padding: 15px; margin-bottom: 15px; height: 160px;
+        display: flex; align-items: center; justify-content: center;
+    }
+    .shop-card img { max-height: 100%; max-width: 100%; }
+    .shop-card h3 { margin: 10px 0 5px; font-size: 1.1rem; }
+    .shop-card p { color: #888; font-size: 0.85rem; margin-bottom: 10px; }
+</style>
+{% endblock %}
+{% block content %}
+<section class="snap-section">
+    <h2 style="font-family: 'Ma Shan Zheng', serif; font-size: 2.2rem; margin-bottom: 40px; color: #4a4a4a; letter-spacing: 3px;">四时周边</h2>
+    <div class="shop-grid">
+        {% for item in items %}
+        <div class="shop-card stamp-border">
+            <div class="shop-img-box">
+                <!-- 如果没有这4个图，会显示断裂图标，实际运行需放置同名图片 -->
+                <img src="{{ url_for('static', filename='images/' + item.image) }}" alt="{{ item.name }}">
+            </div>
+            <h3>{{ item.name }}</h3>
+            <p>{{ item.desc }}</p>
+            <p style="color: #a68a7a; font-weight: bold; margin: 10px 0;">¥ {{ item.price }}</p>
+            <a href="/product/{{ item.id }}" class="btn" style="background: #a68a7a; color: white; border: none; padding: 6px 25px;">查看详情</a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}

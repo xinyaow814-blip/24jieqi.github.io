@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+    .display-wrapper {
+        width: 100%; height: 100%;
+        display: flex; align-items: center; justify-content: flex-start; /* 左对齐 */
+        position: relative;
+        overflow: hidden;
+        padding-left: 8%;
+        background-color: #f3f0e9;
+        transition: background-color 0.8s ease;
+    }
+
+    /* 左侧信息区 */
+    .left-info {
+        z-index: 10; text-align: left; width: 350px;
+    }
+    .left-info h2 { font-size: 4.5rem; font-family: 'Ma Shan Zheng', serif; color: #4a4a4a; margin-bottom: 15px; }
+    .left-info p { font-size: 1.2rem; color: #666; line-height: 1.6; margin-bottom: 25px; }
+    .left-info .btn { background: #a68a7a; color: white; border: none; padding: 12px 40px; }
+
+    /* ========== 【修改点 1】扩大右侧整体容器 ========== */
+    .wheel-wrapper {
+        position: absolute;
+        right: -8%; top: 50%; transform: translateY(-50%);
+        width: 800px; height: 800px; /* 从 700px 扩大到 800px */
+        display: flex; justify-content: center; align-items: center;
+    }
+
+    /* 外圈胶片带 */
+    .film-ring {
+        position: absolute; width: 100%; height: 100%;
+        border-radius: 50%;
+        background: transparent;
+        border: 6px dashed rgba(200, 200, 195, 0.3);
+    }
+
+    /* 内部轨道容器 */
+    .track-2d {
+        position: relative; width: 80%; height: 80%;
+        border-radius: 50%;
+        transition: transform 1s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    /* ========== 【修改点 2】放大卡片尺寸 ========== */
+    .term-card-2d {
+        position: absolute; top: 50%; left: 50%;
+        width: 130px; height: 150px; /* 从 90x100 扩大到 130x150 */
+        margin-left: -65px; margin-top: -75px;
+        background: #fff; border-radius: 16px; /* 圆角略微放大 */
+        border: 2px solid rgba(255,255,255,0.8);
+        box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        transition: transform 0.3s, box-shadow 0.3s, background 0.3s;
+        text-decoration: none; color: #333;
+        transform-origin: center center;
+    }
+    .term-card-2d img {
+        width: 65%; height: auto; margin-bottom: 5px; /* 图片比例适配新尺寸 */
+    }
+    .term-card-2d span { font-size: 14px; font-weight: bold; }
+
+    .term-card-2d:hover { transform: scale(1.2) !important; z-index: 20; background: #fff; box-shadow: 0 15px 35px rgba(0,0,0,0.15); }
+
+    /* 高亮卡片 */
+    .term-card-2d.active { border: 2px solid #a68a7a; box-shadow: 0 0 30px rgba(166, 138, 122, 0.4); transform: scale(1.15); z-index: 10; }
+    .term-card-2d.inactive { opacity: 0.6; filter: grayscale(0.2); }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="snap-section">
+    <div class="display-wrapper" id="displayWrapper">
+        <!-- 左侧信息区 -->
+        <div class="left-info">
+            <p style="color: #888; letter-spacing: 2px;">SELECT THE CIRCLE</p>
+            <h2 id="activeTermName">春分</h2>
+            <p id="activeTermDesc">昼夜平分，草长莺飞。</p>
+            <a href="#" id="exploreBtn" class="btn">了解详情 →</a>
+        </div>
+
+        <!-- 右侧 2D 胶片饼图 -->
+        <div class="wheel-wrapper" id="wheelContainer">
+            <!-- 外围胶片齿孔轨道 (纯装饰) -->
+            <div class="film-ring"></div>
+            <!-- 内部卡片轨道 -->
+            <div class="track-2d" id="track2D">
+                {% for term in terms %}
+                <a href="/culture/{{ term.id }}" class="term-card-2d"
+                   data-id="{{ term.id }}" data-name="{{ term.name }}"
+                   data-desc="{{ term.desc }}" data-index="{{ loop.index0 }}">
+                    <img src="{{ url_for('static', filename='images/' + term.image) }}"
+                         alt="{{ term.name }}"
+                         onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                    <span>{{ term.name }}</span>
+                </a>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+    const cards = document.querySelectorAll('.term-card-2d');
+    const totalCards = cards.length;
+    const track = document.getElementById('track2D');
+    const wrapper = document.getElementById('displayWrapper');
+    const activeName = document.getElementById('activeTermName');
+    const activeDesc = document.getElementById('activeTermDesc');
+    const exploreBtn = document.getElementById('exploreBtn');
+
+    let currentIndex = 0;
+
+    function updateWheel(index) {
+        // ========== 【修改点 3】增加圆环半径 ==========
+        const radius = 260; // 从 220 扩大到 260，让卡片分布更开
+        const angleStep = 360 / totalCards;
+        const activeCard = cards[index];
+
+        // 更新左侧UI
+        activeName.innerText = activeCard.dataset.name;
+        activeDesc.innerText = activeCard.dataset.desc;
+        exploreBtn.href = activeCard.href;
+
+        // 旋转整个轨道
+        const rotateAngle = -(index * angleStep);
+        track.style.transform = `rotate(${rotateAngle}deg)`;
+
+        cards.forEach((card, i) => {
+            const angle = i * angleStep;
+            const radian = angle * Math.PI / 180;
+
+            // 计算圆上的 x, y 坐标
+            const x = Math.cos(radian) * radius;
+            const y = Math.sin(radian) * radius;
+
+            // 2D 平面位移修正
+            card.style.transform = `translate(${x}px, ${y}px)`;
+            card.style.transformOrigin = 'center center';
+
+            // 高亮逻辑
+            card.classList.remove('active', 'inactive');
+            if (i === index) {
+                card.classList.add('active');
+            } else {
+                card.classList.add('inactive');
+            }
+        });
+    }
+
+    // 监听 2D 饼图区域的滚轮
+    document.getElementById('wheelContainer').addEventListener('wheel', function(e) {
+        e.stopPropagation();
+        e.preventDefault();
+        if (e.deltaY > 0) {
+            currentIndex = (currentIndex + 1) % totalCards;
+        } else {
+            currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+        }
+        updateWheel(currentIndex);
+    });
+
+    // 初始化
+    updateWheel(0);
+</script>
+{% endblock %}
