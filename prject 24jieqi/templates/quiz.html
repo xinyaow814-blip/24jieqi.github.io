@@ -1,58 +1,311 @@
-from flask import Flask, render_template
+{% extends "base.html" %}
+{% block head %}
+<style>
+    .quiz-container {
+        width: 80%;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .question-card {
+        background: rgba(255,255,255,0.85);
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 25px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        border: 2px solid #e8dcc8;
+    }
+    .question-number {
+        background: #a68a7a;
+        color: white;
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        margin-bottom: 20px;
+    }
+    .question-text {
+        font-size: 1.3rem;
+        color: #4a4a4a;
+        margin-bottom: 25px;
+        line-height: 1.6;
+        font-family: 'Ma Shan Zheng', serif;
+    }
+    .options-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+    .option-btn {
+        padding: 15px 20px;
+        background: rgba(166,138,122,0.1);
+        border: 2px solid #d4c4b0;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+        color: #5a5a5a;
+        text-align: left;
+    }
+    .option-btn:hover {
+        background: rgba(166,138,122,0.2);
+        border-color: #a68a7a;
+        transform: translateY(-2px);
+    }
+    .option-btn.selected {
+        background: #a68a7a;
+        border-color: #a68a7a;
+        color: white;
+    }
+    .option-btn.correct {
+        background: #7cb342;
+        border-color: #7cb342;
+        color: white;
+    }
+    .option-btn.wrong {
+        background: #e53935;
+        border-color: #e53935;
+        color: white;
+    }
+    .result-area {
+        margin-top: 25px;
+        padding: 20px;
+        border-radius: 12px;
+        display: none;
+    }
+    .result-area.show {
+        display: block;
+    }
+    .result-area.correct {
+        background: rgba(124,179,66,0.15);
+        border: 1px solid #7cb342;
+    }
+    .result-area.wrong {
+        background: rgba(229,57,53,0.15);
+        border: 1px solid #e53935;
+    }
+    .result-text {
+        font-size: 1.1rem;
+        color: #4a4a4a;
+    }
+    .quiz-progress {
+        width: 100%;
+        height: 8px;
+        background: rgba(166,138,122,0.2);
+        border-radius: 4px;
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+    .progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #a68a7a, #c9a96e);
+        border-radius: 4px;
+        transition: width 0.5s ease;
+    }
+    .quiz-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        font-size: 0.95rem;
+        color: #666;
+    }
+    .final-result {
+        text-align: center;
+        padding: 40px;
+        background: rgba(255,255,255,0.9);
+        border-radius: 20px;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    .final-score {
+        font-size: 3rem;
+        font-weight: bold;
+        color: #a68a7a;
+        margin: 20px 0;
+        font-family: 'Ma Shan Zheng', serif;
+    }
+    .final-comment {
+        font-size: 1.2rem;
+        color: #5a5a5a;
+        margin-bottom: 30px;
+    }
+    .restart-btn {
+        background: #a68a7a;
+        color: white;
+        border: none;
+        padding: 12px 40px;
+        border-radius: 25px;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .restart-btn:hover {
+        background: #91735e;
+        transform: translateY(-2px);
+    }
+</style>
+{% endblock %}
+{% block content %}
+<section class="snap-section">
+    <h2 style="font-family: 'Ma Shan Zheng', serif; font-size: 2.2rem; margin-bottom: 30px; color: #4a4a4a; letter-spacing: 3px;">趣味问答</h2>
+    
+    <div class="quiz-container" id="quiz-container">
+        <div class="quiz-stats">
+            <span>题目 <span id="current-num">1</span> / <span id="total-num">5</span></span>
+            <span>得分: <span id="score">0</span></span>
+        </div>
+        
+        <div class="quiz-progress">
+            <div class="progress-bar" id="progress-bar" style="width: 20%;"></div>
+        </div>
+        
+        <div id="questions-container"></div>
+        
+        <div id="final-result" class="final-result" style="display: none;">
+            <h3 style="font-family: 'Ma Shan Zheng', serif; font-size: 1.8rem; color: #4a4a4a;">挑战完成！</h3>
+            <div class="final-score" id="final-score">0/5</div>
+            <div class="final-comment" id="final-comment"></div>
+            <button class="restart-btn" onclick="restartQuiz()">再来一次</button>
+        </div>
+    </div>
+</section>
 
-app = Flask(__name__)
-
-# 1. 24 节气数据 (图片名称修复为安全文件名，如 01.png, 02.png)
-solar_terms = []
-term_names = ["立春", "雨水", "惊蛰", "春分", "清明", "谷雨", 
-              "立夏", "小满", "芒种", "夏至", "小暑", "大暑", 
-              "立秋", "处暑", "白露", "秋分", "寒露", "霜降", 
-              "立冬", "小雪", "大雪", "冬至", "小寒", "大寒"]
-
-for i, name in enumerate(term_names, 1):
-    # 使用 f"{i:02d}" 确保前面补0，如 01.png, 02.png，比单纯 i 更规范，避免排序乱序
-    # *注意*：您需要将 images 文件夹里的图重命名为 01.png 到 24.png
-    safe_img_name = f"{i:02d}.png" 
-    solar_terms.append({
-        'id': i,
-        'name': name,
-        'image': safe_img_name, # 使用安全文件名
-        'desc': f'{name}，标志着自然的周期更迭与万物生发。',
-        'season': 'spring' if i <= 6 else ('summer' if i <= 12 else ('autumn' if i <= 18 else 'winter'))
-    })
-
-# 2. 商品数据
-shop_items = [
-    {'id': 101, 'name': '怀中陪伴毛绒玩偶', 'image': 'toy.png', 'desc': '软萌节气限定。', 'price': 129},
-    {'id': 102, 'name': '指尖灵气树脂摆件', 'image': 'figure.png', 'desc': '桌面东方灵气。', 'price': 89},
-    {'id': 103, 'name': '一起走！帆布包', 'image': 'bag.png', 'desc': '背在身上文艺出街。', 'price': 79},
-    {'id': 104, 'name': '节气印象香薰套装', 'image': 'candle.png', 'desc': '用气味感知四季。', 'price': 199},
-]
-
-@app.route('/')
-def index(): return render_template('index.html')
-
-@app.route('/display')
-def display(): return render_template('display.html', terms=solar_terms)
-
-@app.route('/culture/<int:id>')
-def culture_detail(id):
-    term = next((item for item in solar_terms if item["id"] == id), None)
-    return render_template('culture.html', term=term)
-
-@app.route('/interactive')
-def interactive(): return render_template('interactive.html')
-
-@app.route('/quiz')
-def quiz(): return render_template('quiz.html')
-
-@app.route('/shop')
-def shop(): return render_template('shop.html', items=shop_items)
-
-@app.route('/product/<int:id>')
-def product_detail(id):
-    item = next((item for item in shop_items if item["id"] == id), None)
-    return render_template('product_detail.html', item=item)
-
-if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+<script>
+    const questions = [
+        {
+            id: 1,
+            question: "以下哪个节气标志着春天的开始？",
+            options: ["雨水", "立春", "惊蛰", "春分"],
+            answer: 1,
+            explanation: "立春是二十四节气中的第一个节气，标志着春天的正式开始。"
+        },
+        {
+            id: 2,
+            question: "\"清明时节雨纷纷\"描述的是哪个节气的景象？",
+            options: ["谷雨", "清明", "雨水", "惊蛰"],
+            answer: 1,
+            explanation: "清明是春季的第五个节气，通常在每年4月4日或5日，此时天气转暖，降雨增多。"
+        },
+        {
+            id: 3,
+            question: "哪个节气表示炎热天气的开始？",
+            options: ["小暑", "大暑", "立夏", "夏至"],
+            answer: 0,
+            explanation: "小暑是夏季的第五个节气，表示天气开始炎热，但还不是最热的时候。"
+        },
+        {
+            id: 4,
+            question: "秋收冬藏，哪个节气标志着秋天的开始？",
+            options: ["处暑", "白露", "立秋", "秋分"],
+            answer: 2,
+            explanation: "立秋是秋季的第一个节气，标志着秋天的开始，但此时天气依然炎热。"
+        },
+        {
+            id: 5,
+            question: "冬至这一天，北半球的日照时间有什么特点？",
+            options: ["最长", "最短", "适中", "不确定"],
+            answer: 1,
+            explanation: "冬至是北半球一年中白天最短、夜晚最长的一天，之后白天会逐渐变长。"
+        }
+    ];
+    
+    let currentQuestion = 0;
+    let score = 0;
+    let answered = false;
+    
+    function renderQuestion() {
+        const q = questions[currentQuestion];
+        const container = document.getElementById('questions-container');
+        
+        container.innerHTML = `
+            <div class="question-card">
+                <div class="question-number">${q.id}</div>
+                <div class="question-text">${q.question}</div>
+                <div class="options-grid">
+                    ${q.options.map((opt, index) => `
+                        <button class="option-btn" onclick="selectOption(${index})">${opt}</button>
+                    `).join('')}
+                </div>
+                <div class="result-area" id="result-area">
+                    <div class="result-text" id="result-text"></div>
+                </div>
+            </div>
+        `;
+        
+        document.getElementById('current-num').textContent = currentQuestion + 1;
+        document.getElementById('total-num').textContent = questions.length;
+        document.getElementById('score').textContent = score;
+        document.getElementById('progress-bar').style.width = `${((currentQuestion + 1) / questions.length) * 100}%`;
+        answered = false;
+    }
+    
+    function selectOption(index) {
+        if (answered) return;
+        answered = true;
+        
+        const q = questions[currentQuestion];
+        const options = document.querySelectorAll('.option-btn');
+        const resultArea = document.getElementById('result-area');
+        const resultText = document.getElementById('result-text');
+        
+        options.forEach((opt, i) => {
+            opt.disabled = true;
+            if (i === q.answer) {
+                opt.classList.add('correct');
+            } else if (i === index && i !== q.answer) {
+                opt.classList.add('wrong');
+            }
+        });
+        
+        if (index === q.answer) {
+            score++;
+            document.getElementById('score').textContent = score;
+            resultArea.classList.add('correct');
+            resultText.innerHTML = `<strong>回答正确！</strong><br>${q.explanation}`;
+        } else {
+            resultArea.classList.add('wrong');
+            resultText.innerHTML = `<strong>回答错误！</strong><br>正确答案是：${q.options[q.answer]}<br>${q.explanation}`;
+        }
+        
+        resultArea.classList.add('show');
+        
+        setTimeout(() => {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                renderQuestion();
+            } else {
+                showFinalResult();
+            }
+        }, 2500);
+    }
+    
+    function showFinalResult() {
+        document.getElementById('questions-container').style.display = 'none';
+        document.getElementById('final-result').style.display = 'block';
+        document.getElementById('final-score').textContent = `${score}/${questions.length}`;
+        
+        let comment = "";
+        if (score === questions.length) {
+            comment = "太棒了！你是节气知识大师！";
+        } else if (score >= questions.length * 0.8) {
+            comment = "非常优秀！对节气文化了解很深！";
+        } else if (score >= questions.length * 0.6) {
+            comment = "不错哦！继续加油学习节气知识！";
+        } else {
+            comment = "还要多多了解二十四节气文化哦！";
+        }
+        document.getElementById('final-comment').textContent = comment;
+    }
+    
+    function restartQuiz() {
+        currentQuestion = 0;
+        score = 0;
+        document.getElementById('questions-container').style.display = 'block';
+        document.getElementById('final-result').style.display = 'none';
+        renderQuestion();
+    }
+    
+    renderQuestion();
+</script>
+{% endblock %}
